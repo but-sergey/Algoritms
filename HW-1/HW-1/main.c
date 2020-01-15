@@ -101,7 +101,7 @@ void menu()
 
 void pause()
 {
-	printf("Нажмите <Enter> для продолжения...");
+	printf("\nНажмите <Enter> для продолжения...");
 	getch();
 }
 
@@ -561,7 +561,44 @@ void task14()
 {
 	printf("Задача 14 (автоморфные числа)\n");
 	
+	int N;
+	int num, num2;
+	boolean flag;
 
+	printf("Число N: ");
+	scanf("%d", &N);
+	
+	if (N > 0)
+	{
+		for (int i = 1; i <= N; i++)
+		{
+			num = i;
+			num2 = i * i;
+			flag = TRUE;
+			do
+			{
+				if ((num % 10) != (num2 % 10))
+				{
+					flag = FALSE;
+					break;
+				}
+				else
+				{
+					num /= 10;
+					num2 /= 10;
+				}
+			} while (num > 0);
+
+			if (flag)
+			{
+				printf("%10d%15d\n", i, i * i);
+			}
+		}
+	}
+	else
+	{
+		printf("Число должно быть больше 0.");
+	}
 
 	pause();
 }
