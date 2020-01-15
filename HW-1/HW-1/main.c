@@ -4,6 +4,7 @@
 // ================================================================
 
 #include<stdio.h>
+#include<stdlib.h>
 #include<math.h>
 #include<Windows.h>
 #pragma warning(disable:6031)
@@ -38,7 +39,6 @@ int main(int argc, const char* argv[])
 	{
 		menu();
 		scanf("%i", &sel);
-		//sel = 6;
 
 		if (sel != 0) { system("cls"); }
 
@@ -92,9 +92,9 @@ void menu()
 	printf(" 9 - Задача 09 (деление вычитанием)\n");
 	printf("10 - Задача 10 (нечетные цифры в числе)\n");
 	printf("11 - Задача 11 (среднее арифметическое чисел)\n");
-	printf("12 - task12\n");
-	printf("13 - task13\n");
-	printf("14 - task14\n");
+	printf("12 - Задача 12 (функция нахождения максимального из 3х чисел)\n");
+	printf("13 - Задача 13 (случайное число)\n");
+	printf("14 - Задача 14 (автоморфные числа)\n");
 	printf("\n");
 	printf("0 - выход\n");
 }
@@ -447,14 +447,63 @@ void task11()
 {
 	printf("Задача 11 (среднее арифметическое положительных чисел, оканчивающихся на 8)\n");
 
+	int num;
+	int count = 0;
+	int i = 0;
+	int sum = 0;
+
+	do
+	{
+		i++;
+		printf("Введите число №%d (0 для выхода): ", i);
+		scanf("%d", &num);
+
+		if ((num > 0) && (num % 10 == 8))
+		{
+			sum += num;
+			count++;
+		}
+	} while (num != 0);
+
+	if (count != 0)
+	{
+		printf("Среднее арифметическое = %f.\n", (float)sum / count);
+	}
+	else
+	{
+		printf("Положительных чисел, оканчивающихся на 8 не встречалось.\n");
+	}
+
 	pause();
 }
 
 // 12. Написать функцию нахождения максимального из трех чисел.
 //
+int Max3(int x1, int x2, int x3)
+{
+	int max;
+	
+	max = x1;
+	if (x2 > max) { max = x2; }
+	if (x3 > max) { max = x3; }
+
+	return max;
+}
+
 void task12()
 {
-	printf("Task 12\n");
+	printf("Задача 12 (функция нахождения максимального из 3х чисел)\n");
+
+	int x1, x2, x3;
+	
+	printf("Число №1: ");
+	scanf("%d", &x1);
+	printf("Число №2: ");
+	scanf("%d", &x2);
+	printf("Число №3: ");
+	scanf("%d", &x3);
+
+	printf("Максимальное число: %d\n", Max3(x1, x2, x3));
 
 	pause();
 }
@@ -463,9 +512,42 @@ void task12()
 // а) с использованием стандартной функции rand()
 // б) без использования стандартной функции rand()
 //
+
+int MyRand1(int min, int max)
+{
+	return (rand() % (max - min + 1) + min);
+}
+
+int GlobalRnd = 4;
+
+int MyRand2(int min, int max)
+{
+	int a = 3;
+	//int b = 0; // Переменную b не используем, иначе будет некорректное выдерживание границы min
+	GlobalRnd = (a * GlobalRnd) % (max - min + 1) + min;
+	return GlobalRnd;
+}
+
 void task13()
 {
-	printf("Task 13\n");
+	printf("Задача 13 (случайное число)\n");
+
+	int i = 0;
+	int NumCount = 5;
+	int RndNum;
+
+	srand(time(NULL));
+	printf("С использованием функции rand(): ");
+	for (int i = 0; i < NumCount; i++)
+	{
+		printf("%d%s", MyRand1(1, 100), (i == NumCount - 1) ? ".\n" : ", ");
+	}
+
+	printf("Без использования функции rand(): ");
+	for (int i = 0; i < NumCount; i++)
+	{
+		printf("%d%s", MyRand2(1, 100), (i == NumCount - 1) ? ".\n" : ", ");
+	}
 
 	pause();
 }
@@ -477,7 +559,9 @@ void task13()
 //
 void task14()
 {
-	printf("Task 14\n");
+	printf("Задача 14 (автоморфные числа)\n");
+	
+
 
 	pause();
 }
