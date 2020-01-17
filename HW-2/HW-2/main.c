@@ -1,4 +1,4 @@
-// ================================================================
+ // ================================================================
 // Внимание!!! Для отображения русских букв (в Win7) в окне консоли
 // в свойствах изменить шрифт на Lucida Console!
 // ================================================================
@@ -9,7 +9,8 @@
 
 #include<stdio.h>
 #include<stdlib.h>
-#include<math.h>
+#include<string.h>
+//#include<math.h>
 #include<Windows.h>
 #pragma warning(disable:6031)
 
@@ -53,6 +54,7 @@ void menu()
 	printf(" 3 - Задача 03 (исполнитель \"Калькулятор\")\n");
 	printf("\n");
 	printf("0 - выход\n");
+	printf("-> ");
 }
 
 void pause()
@@ -64,9 +66,54 @@ void pause()
 // 1. Реализовать функцию перевода чисел из десятичной системы в двоичную, используя
 // рекурсию.
 //
+// -----> Вариант со строкой не взлетел. В рекурсию проваливается до конца нормально, а когда
+// -----> начинает выходить и собирать ответ - Access Violation. Что не так?
+
+/*char* DecToBin(int dec)
+{
+	char symbol;
+	char* result;
+	result = "";
+
+	symbol = (int)'0' + (dec % 2);
+	printf("%c", symbol);
+
+	if (dec >= 2)
+	{
+		sprintf(result, "%s%c", DecToBin(dec / 2), symbol);
+		//return strcpy(DecToBin(dec / 2), symbol);
+	}
+	else
+	{
+		result = "1";
+		//strcpy(result, &symbol);
+		//sprintf(result, "%c", symbol);
+	}
+	return result;
+}*/
+
+long int DecToBin(int dec)
+{
+	if (dec >= 2)
+	{
+		return DecToBin(dec / 2) * 10 + dec % 2;
+	}
+	else
+	{
+		return dec;
+	}
+}
+
 void task01()
 {
 	printf("Задача 01 (перевод из десятичной в двоичную систему)\n\n");
+
+	int dec;
+
+	printf("Число в десятичной системе: ");
+	scanf("%d", &dec);
+
+	printf("Число в двоичной системе: %ld", DecToBin(dec));
 
 	pause();
 }
@@ -76,14 +123,86 @@ void task01()
 // b.Рекурсивно.
 // c. *Рекурсивно, используя свойство чётности степени
 //
+
+// без рекурсии
+long int MyPow1(int a, int b)
+{
+	long int result = 1;
+
+	if (b > 0)
+	{
+		for (int i = 0; i < b; i++)
+		{
+			result *= a;
+		}
+	}
+	else
+	{
+		result = -1;
+	}
+
+	return result;
+}
+
+// рекурсивно
+long int MyPow2(int a, int b)
+{
+	if (b == 0)
+	{
+		return -1;
+	}
+	else if (b == 1)
+	{
+		return a;
+	}
+	else
+	{
+		return a * MyPow2(a, b - 1);
+	}
+}
+
+// рекурсивно, используя свойство четности степени
+long int MyPow3(int a, int b)
+{
+	if (b <= 0)
+	{
+		return -1;
+	}
+	else if (b == 1)
+	{
+		return a;
+	}
+	else if (b % 2 == 0)
+	{
+		long int result = MyPow3(a, b / 2);
+		return result * result;
+	}
+	else
+	{
+		return a * MyPow3(a, b - 1);
+	}
+}
+
 void task02()
 {
 	printf("Задача 02 (возведение в степень)\n\n");
 
+	int a, b;
+	
+	printf("Основание a: ");
+	scanf("%d", &a);
+	printf("Показатель b: ");
+	scanf("%d", &b);
+
+	printf("Возведение в степень:\n");
+	printf("%15ld - без рекурсии;\n", MyPow1(a, b));
+	printf("%15ld - рекурсивно;\n", MyPow2(a, b));
+	printf("%15ld - рекурсивно, используя четность степени.\n", MyPow3(a, b));
+
 	pause();
 }
 
-// 3. * *Исполнитель «Калькулятор» преобразует целое число, записанное на экране.У
+// 3. *Исполнитель «Калькулятор» преобразует целое число, записанное на экране.У
 // исполнителя две команды, каждой присвоен номер :
 //   1. Прибавь 1.
 //   2. Умножь на 2.
