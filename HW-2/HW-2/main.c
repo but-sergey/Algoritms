@@ -211,9 +211,49 @@ void task02()
 //   а.— использованием массива.
 //   b. * — использованием рекурсии.
 //
+
+// с использованием массива
+int Calc1(int min, int max)
+{
+	// не решил
+	return -1;
+}
+
+// с использованием рекурсии
+void CalcRecursive(int min, int max, int* count);
+
+int Calc2(int min, int max)
+{
+	int count = 0;
+	
+	CalcRecursive(min, max, &count);
+	
+	return count;
+}
+
+void CalcRecursive(int min, int max, int* count)
+{
+	if (min == max)
+	{
+		*count += 1;
+	}
+	else if (min < max)
+	{
+		CalcRecursive(min + 1, max, count);
+		CalcRecursive(min * 2, max, count);
+	}
+}
+
 void task03()
 {
+	int min = 3;
+	int max = 20;
+
 	printf("«адача 03 (исполнитель \" алькул€тор\")\n\n");
+
+	printf(" оличество вариантов программ преобразовани€ числа %d в %d:\n", min, max);
+	printf(" - с использованием массива: %d\n", Calc1(min, max));
+	printf(" - с использованием рекурсии: %d\n", Calc2(min, max));
 
 	pause();
 }
