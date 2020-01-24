@@ -11,6 +11,9 @@
 #include<stdlib.h>
 #include<Windows.h>
 #pragma warning(disable:6031)
+#pragma warning(disable:6011)
+#pragma warning(disable:6385)
+#pragma warning(disable:6386)
 
 void menu();
 void task01();
@@ -71,6 +74,87 @@ void pause()
 void task01()
 {
 	printf("Задача 01 (количество маршрутов)\n\n");
+	
+	char fileName[] = "..\\map.txt";
+	FILE* mapFile = fopen(fileName, "r");
+
+	if (mapFile != NULL)
+	{
+		// чтение размера карты
+		int N, M;
+		fscanf(mapFile, "%d %d", &N, &M);
+		
+		// создание динамического двумерного массива - карты
+		int** map = (int**)malloc(N * sizeof(int*));
+		for (int i = 0; i < N; i++)
+		{
+			map[i] = (int*)malloc(M * sizeof(int));
+		}
+
+		// чтение карты из файла
+		for (int i = 0; i < N; i++)
+		{
+			for (int j = 0; j < M; j++)
+			{
+				fscanf(mapFile, "%d", &map[i][j]);
+			}
+		}
+		
+		// вывод массива (контроль)
+		printf("Карта:\n");
+		for (int i = 0; i < N; i++)
+		{	
+			for (int j = 0; j < M; j++)
+			{
+				printf("%5d ", map[i][j]); 
+			}
+			printf("\n");
+		}
+		printf("\n");
+		// закрытие файла
+		fclose(mapFile);
+		
+		// алгоритм
+		// создание динамического двумерного массива решений
+		int** ways = (int**)malloc(N * sizeof(int*));
+		for (int i = 0; i < N; i++)
+		{
+			ways[i] = (int*)malloc(M * sizeof(int));
+		}
+		for (int i = 0; i < N; i++)
+		{
+			for (int j = 0; j < M; j++)
+			{
+				if (map[i][j] == 0)
+				{
+					ways[i][j] = 0;
+				}
+				else if ((i == 0) || (j == 0))
+				{
+					ways[i][j] = 1;
+				}
+				else 
+				{
+					ways[i][j] = ways[i - 1][j] + ways[i][j - 1];
+				}
+			}
+		}
+		// вывод массива
+		printf("Количество маршрутов до соответствующих точек:\n");
+		for (int i = 0; i < N; i++)
+		{
+			for (int j = 0; j < M; j++)
+			{
+				printf("%5d ", ways[i][j]);
+			}
+			printf("\n");
+		}
+		printf("\n");
+	}
+	else
+	{
+		printf("Не удалось открыть файл %s\n", fileName);
+	}
 
 	pause();
 }
