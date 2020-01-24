@@ -9,11 +9,13 @@
 
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 #include<Windows.h>
 #pragma warning(disable:6031)
 #pragma warning(disable:6011)
 #pragma warning(disable:6385)
 #pragma warning(disable:6386)
+#pragma warning(disable:6387)
 
 void menu();
 void task01();
@@ -114,13 +116,13 @@ void task01()
 		// закрытие файла
 		fclose(mapFile);
 		
-		// алгоритм
-		// создание динамического двумерного массива решений
+		// выделение пам€ти динамического двумерного массива решений
 		int** ways = (int**)malloc(N * sizeof(int*));
 		for (int i = 0; i < N; i++)
 		{
 			ways[i] = (int*)malloc(M * sizeof(int));
 		}
+		// заполнение массива решений
 		for (int i = 0; i < N; i++)
 		{
 			for (int j = 0; j < M; j++)
@@ -139,6 +141,7 @@ void task01()
 				}
 			}
 		}
+
 		// вывод массива
 		printf(" оличество маршрутов до соответствующих точек:\n");
 		for (int i = 0; i < N; i++)
@@ -150,6 +153,15 @@ void task01()
 			printf("\n");
 		}
 		printf("\n");
+
+		// освобождение пам€ти, выделенной под массивы
+		for (int i = 0; i < N; i++)
+		{
+			free(map[i]);
+			free(ways[i]);
+		}
+		free(map);
+		free(ways);
 	}
 	else
 	{
@@ -165,6 +177,84 @@ void task02()
 {
 	printf("«адача 02 (длина максимальной последовательности)\n\n");
 
+	char *A;
+	char *B;
+	int N;
+	int M;
+	A = (char*)malloc(100);
+	B = (char*)malloc(100);
+
+	printf("ѕерва€ последовательность: ");
+	scanf("%s", A);
+	//A = "GEEKBRAINS";
+	N = strlen(A);
+	printf("¬тора€ последовательность: ");
+	scanf("%s", B);
+	//B = "GEEKMINDS";
+	M = strlen(B);
+
+	// выделение пам€ти дл€ матрицы
+	int** count = (int**)malloc((N + 1) * sizeof(int*));
+	for (int i = 0; i <= N; i++)
+	{
+		count[i] = (int*)malloc((M + 1) * sizeof(int));
+	}
+
+	// заполнение матрицы
+	for (int i = 0; i <= N; i++)
+	{
+		for (int j = 0; j <= M; j++)
+		{
+			if ((i == 0) || (j == 0))
+			{
+				count[i][j] = 0;
+			}
+			else if (A[i-1] == B[j-1])
+			{
+				count[i][j] = 1 + count[i - 1][j - 1];
+			}
+			else
+			{
+				count[i][j] = max(count[i - 1][j], count[i][j - 1]);
+			}
+		}
+	}
+
+	// вывод матрицы
+	printf("ћатрица решений:\n");
+	for (int i = -1; i <= N; i++)
+	{
+		for (int j = -1; j <= M; j++)
+		{
+			if (((i == -1) && (j < 1)) || ((i == 0) && (j == -1)))
+			{
+				printf("    "); 
+			}
+			else if ((i == -1) && (j > 0))
+			{
+				printf("   %c", B[j - 1]); 
+			}
+			else if ((j == -1) && (i > 0))
+			{
+				printf("   %c", A[i - 1]); 
+			}
+			else
+			{
+				printf("%4d", count[i][j]); 
+			}
+		}
+		printf("\n");
+	}
+	printf("\n");
+	printf("ƒлина наибольшей общей подпоследовательности равна %d\n", count[N][M]);
+
+	// освобождение пам€ти
+	for (int i = 0; i <= N; i++)
+	{
+		free(count[i]);
+	}
+	free(count);
+	
 	pause();
 }
 
