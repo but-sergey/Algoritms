@@ -275,9 +275,84 @@ void task02()
 // одному разу.«десь алгоритм решени€ такой же как и в задаче о 8 ферз€х.–азница только в проверке
 // положени€ кон€.
 //
+// размер доски
+int N;
+int M;
+// выводим доску
+void Print(int** a)
+{
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < M; j++)
+		{
+			printf("%4d", a[i][j]);
+		}
+		printf("\n");
+	}
+}
+
+// очищаем доску
+void Zero(int** a)
+{
+	for (int i = 0; i < N; i++)
+		for (int j = 0; j < M; j++)
+		{
+			a[i][j] = 0;
+		}
+}
+
+// поиск решени€
+int SearchSolution(int num, int x, int y, int** board)
+{
+	if (num == N * M + 1) return 1;
+	for (int row = 0; row < N; row++)
+	{
+		for (int col = 0; col < M; col++)
+		{
+			// если клетка пуста€
+			if (board[row][col] == 0)
+			{
+				// условие хода конем (если первый ход, то подходит люба€ клетка)
+				if ((num == 1) || ((abs(row - x) == 2) && (abs(col - y) == 1) || (abs(row - x) == 1) && (abs(col - y) == 2)))
+				{
+					board[row][col] = num;
+					if (SearchSolution(num + 1, row, col, board)) return 1;
+					board[row][col] = 0;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 void task03()
 {
 	printf("«адача 03 (шахматный конь)\n\n");
+
+	int x;
+	int y;
+
+	printf("–азмеры доски через пробел (N M): ");
+	scanf("%d %d", &N, &M);
+
+	//выделение пам€ти под двумерный массив
+	int** board = (int**)malloc(N * sizeof(int*));
+	for (int i = 0; i < M; i++)
+	{
+		board[i] = (int*)malloc(M * sizeof(int));
+	}
+
+	Zero(board);
+	SearchSolution(1, -1, -1, board);
+	printf("\n");
+	Print(board);
+
+	// освобождение пам€ти
+	for (int i = 0; i < N; i++)
+	{
+		free(board[i]);
+	}
+	free(board);
 
 	pause();
 }
