@@ -313,7 +313,7 @@ int SearchSolution(int num, int x, int y, int** board)
 			if (board[row][col] == 0)
 			{
 				// условие хода конем (если первый ход, то подходит любая клетка)
-				if ((num == 1) || ((abs(row - x) == 2) && (abs(col - y) == 1) || (abs(row - x) == 1) && (abs(col - y) == 2)))
+				if ((num == 1) || (((abs(row - x) == 2) && (abs(col - y) == 1)) || ((abs(row - x) == 1) && (abs(col - y) == 2))))
 				{
 					board[row][col] = num;
 					if (SearchSolution(num + 1, row, col, board)) return 1;
@@ -337,15 +337,22 @@ void task03()
 
 	//выделение памяти под двумерный массив
 	int** board = (int**)malloc(N * sizeof(int*));
-	for (int i = 0; i < M; i++)
+	for (int i = 0; i < N; i++)
 	{
 		board[i] = (int*)malloc(M * sizeof(int));
 	}
 
 	Zero(board);
-	SearchSolution(1, -1, -1, board);
 	printf("\n");
-	Print(board);
+	if (SearchSolution(1, -1, -1, board))
+	{
+		printf("Решение: \n\n");
+		Print(board);
+	}
+	else
+	{
+		printf("Решение не найдено.\n");
+	}
 
 	// освобождение памяти
 	for (int i = 0; i < N; i++)
@@ -353,6 +360,6 @@ void task03()
 		free(board[i]);
 	}
 	free(board);
-
+	
 	pause();
 }
