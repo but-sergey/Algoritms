@@ -74,8 +74,68 @@ void pause()
 
 // 1. –еализовать перевод из дес€тичной в двоичную систему счислени€ с использованием стека.
 //
-void task01()
+
+#define T short
+
+struct TNode
 {
+	T value;
+	Node* next;
+};
+
+typedef struct TNode Node;
+
+struct Stack
+{
+	Node* head;
+	int size;
+	int maxSize;
+};
+
+struct Stack Stack;
+
+int push(T value)
+{
+	if (Stack.size >= Stack.maxSize)
+	{
+		return -1;
+	}
+	Node* tmp = (Node*)malloc(sizeof(Node));
+	tmp->value = value;
+	tmp->next = Stack.head;
+	Stack.head = tmp;
+	Stack.size++;
+	return 0;
+}
+
+T pop()
+{
+	if (Stack.size == 0)
+	{
+		return NULL;
+	}
+	Node* next = NULL;
+	T value;
+	value = Stack.head->value;
+	next = Stack.head;
+	Stack.head = Stack.head->next;
+	free(next);
+	Stack.size--;
+	return value;
+}
+
+void PrintStack()
+{
+	Node* current = Stack.head;
+	while (current != NULL)
+	{
+		printf("%d", current->value);
+		current = current->next;
+	}
+}
+
+void task01()
+{	
 	printf("«адача 01 (перевод из дес€тичной в двоичную систему)\n\n");
 
 	pause();
