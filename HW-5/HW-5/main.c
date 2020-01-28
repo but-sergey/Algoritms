@@ -80,7 +80,7 @@ void pause()
 struct TNode
 {
 	T value;
-	Node* next;
+	struct TNode* next;
 };
 
 typedef struct TNode Node;
@@ -134,9 +134,44 @@ void PrintStack()
 	}
 }
 
+void EraseStack()
+{
+	Node* current = Stack.head;
+	Node* next;
+	while (current != NULL)
+	{
+		next = current->next;
+		free(current);
+		current = next;
+	}
+	Stack.head = NULL;
+	Stack.size = 0;
+}
+
 void task01()
 {	
 	printf("Задача 01 (перевод из десятичной в двоичную систему)\n\n");
+	
+	int num;
+	Stack.maxSize = 100;
+
+	printf("Число в десятичной системе: ");
+	scanf("%d", &num);
+	while (num != 0)
+	{
+		if (push(num % 2) == 0)
+		{
+			num /= 2;
+		}
+		else
+		{
+			printf("Переполнение стека/n");
+		}
+	}
+	printf("Число в двоичной системе: ");
+	PrintStack();
+	EraseStack();
+	printf("\n");
 
 	pause();
 }
