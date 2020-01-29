@@ -10,6 +10,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<Windows.h>
+#pragma warning(disable:6011)
 #pragma warning(disable:6031)
 
 void menu();
@@ -74,78 +75,98 @@ void pause()
 
 // 1. Реализовать перевод из десятичной в двоичную систему счисления с использованием стека.
 //
-
-#define T short
-
+// === Универсальный стек ===
+// описание типов
 struct TNode
 {
-	T value;
+	// вместо данных - нетипизированная ссылка
+	void* value;
 	struct TNode* next;
 };
 
-typedef struct TNode Node;
+typedef struct TNode TNode;
 
-struct Stack
+struct TStack
 {
-	Node* head;
+	TNode* head;
 	int size;
 	int maxSize;
 };
 
-struct Stack Stack;
+typedef struct TStack TStack;
 
-int push(T value)
+// пуш
+int push(TStack* Stack, void* value)
 {
-	if (Stack.size >= Stack.maxSize)
+	if (Stack->size >= Stack->maxSize)
 	{
 		return -1;
 	}
-	Node* tmp = (Node*)malloc(sizeof(Node));
+	TNode* tmp = (TNode*)malloc(sizeof(TNode));
 	tmp->value = value;
-	tmp->next = Stack.head;
-	Stack.head = tmp;
-	Stack.size++;
+	tmp->next = Stack->head;
+	Stack->head = tmp;
+	Stack->size++;
 	return 0;
 }
 
-T pop()
+// поп
+void* pop(TStack* Stack)
 {
-	if (Stack.size == 0)
+	if (Stack->size == 0)
 	{
 		return NULL;
 	}
-	Node* next = NULL;
-	T value;
-	value = Stack.head->value;
-	next = Stack.head;
-	Stack.head = Stack.head->next;
-	free(next);
-	Stack.size--;
+	TNode* tmp = NULL;
+	void* value = Stack->head->value;
+	tmp = Stack->head;
+	Stack->head = Stack->head->next;
+	free(tmp);
+	Stack->size--;
 	return value;
 }
 
-void PrintStack()
+// Очистка стека (но не удаление!)
+void Erase(TStack* Stack)
 {
-	Node* current = Stack.head;
-	while (current != NULL)
-	{
-		printf("%d", current->value);
-		current = current->next;
-	}
-}
-
-void EraseStack()
-{
-	Node* current = Stack.head;
-	Node* next;
+	TNode* current = Stack->head;
+	TNode* next;
 	while (current != NULL)
 	{
 		next = current->next;
 		free(current);
 		current = next;
 	}
-	Stack.head = NULL;
-	Stack.size = 0;
+	Stack->head = NULL;
+	Stack->size = 0;
+}
+
+// Инициализация нового стека
+void Init(TStack* Stack, int maxSize)
+{
+	Stack->maxSize = maxSize;
+	Stack->size = 0;
+	Stack->head = NULL;
+}
+// === конец универсальной части ===
+
+// вывод стека на экран (для стека с данными типа int)
+void PrintStackInt(TStack* Stack)
+{
+	TNode* current = Stack->head;
+	while (current != NULL)
+	{
+		printf("%d", *(int*)current->value);
+		current = current->next;
+	}
+}
+
+// получение ссылки на значение типа int
+int* GetIntP(int num)
+{
+	int* tmp = (int*)malloc(sizeof(int));
+	*tmp = num;
+	return tmp;
 }
 
 void task01()
@@ -153,14 +174,20 @@ void task01()
 	printf("Задача 01 (перевод из десятичной в двоичную систему)\n\n");
 	
 	int num;
-	Stack.maxSize = 100;
+	
+	// объявление стека
+	TStack* Stack = (TStack*)malloc(sizeof(TStack));
+	Init(Stack, 100);
 
 	printf("Число в десятичной системе: ");
 	scanf("%d", &num);
 	while (num != 0)
 	{
-		if (push(num % 2) == 0)
+		// если стек ещё не полный
+		if (Stack->size < Stack->maxSize)
 		{
+			// кладем в стек остаток от деления на 2
+			push(Stack, GetIntP(num % 2));
 			num /= 2;
 		}
 		else
@@ -169,9 +196,12 @@ void task01()
 		}
 	}
 	printf("Число в двоичной системе: ");
-	PrintStack();
-	EraseStack();
+	// получаем значение в 2-ичной системе
+	PrintStackInt(Stack);
 	printf("\n");
+	// очищение и удаление стека
+	Erase(Stack);
+	free(Stack);
 
 	pause();
 }
@@ -181,9 +211,110 @@ void task01()
 // ([{}]), неправильных — )(, ())({ ), (, ]) }), ([(]) для скобок[, (, { .
 // Например: (2 + (2 * 2)) или[2 / {5 * (4 + 7)}].
 //
+// получение ссылки на символ
+char* GetCharP(char value)
+{
+	char* tmp = (char*)malloc(sizeof(char));
+	tmp[0] = value;
+	tmp[1] = '\0';
+	return tmp;
+}
+
 void task02()
 {
 	printf("Задача 02 (скобочные последовательности)\n\n");
+
+	// объявление и инициализация стека
+	TStack* Stack = (TStack*)malloc(sizeof(TStack));
+	Init(Stack, 100);
+
+	// исходная строка
+	char* expr = (char*)malloc(100*sizeof(char));
+
+	printf("Скобочная последовательность: ");
+	scanf("%s", expr);
+
+	int index = 0;
+	int result = 0;
+	void* symbol;
+
+	while (expr[index] != '\0')
+	{
+		switch (expr[index])
+		{
+		// если скобка открывающая, то заталкиваем её в стек
+		case '(':
+		case '[':
+		case '{':
+		case '<':
+			push(Stack, GetCharP(expr[index]));
+			break;
+		// если скобка закрывающая, то получаем скобку из стека и проверяем соответствие
+		case ')':
+			result = -1;
+			symbol = pop(Stack);
+			if (symbol != NULL)
+			{
+				if (*(char*)symbol == '(')
+				{
+					result = 0;
+				}
+			}
+			break;
+		case ']':
+			result = -1;
+			symbol = pop(Stack);
+			if (symbol != NULL)
+			{
+				if (*(char*)symbol == '[')
+				{
+					result = 0;
+				}
+			}
+			break;
+		case '}':
+			result = -1;
+			symbol = pop(Stack);
+			if (symbol != NULL)
+			{
+				if (*(char*)symbol == '{')
+				{
+					result = 0;
+				}
+			}
+			break;
+		case '>':
+			result = -1;
+			symbol = pop(Stack);
+			if (symbol != NULL)
+			{
+				if (*(char*)symbol == '<')
+				{
+					result = 0;
+				}
+			}
+			break;
+		}
+		if (result == -1)
+		{
+			break;
+		}
+		else
+		{
+			index++;
+		}
+	}
+	if ((result == 0) && (Stack->size == 0))
+	{
+		printf("Скобочная последовательность правильная\n");
+	}
+	else
+	{
+		printf("Скобочная последовательность не правильная\n");
+	}
+	
+	Erase(Stack);
+	free(Stack);
 
 	pause();
 }
