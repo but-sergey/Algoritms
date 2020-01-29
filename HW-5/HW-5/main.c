@@ -441,16 +441,19 @@ void task04()
 		{	// буква - им€ переменной
 			expr2[ind2] = expr1[ind];
 			ind2++;
+			ind++;
 		}
 		else if ((expr1[ind] == '+') || (expr1[ind] == '-'))
-		{
+		{ // арифметические действи€ с низким приоритетом
 			if (Temp->size == 0)
 			{
 				push(Temp, GetCharP(expr1[ind]));
+				ind++;
 			}
 			else if (*(char*)Temp->head->value == '(')
 			{
 				push(Temp, GetCharP(expr1[ind]));
+				ind++;
 			}
 			else
 			{
@@ -460,10 +463,11 @@ void task04()
 			}
 		}
 		else if ((expr1[ind] == '*') || (expr1[ind] == '/'))
-		{
+		{ // арифметические действи€ с высоким приоритетом
 			if (Temp->size == 0)
 			{
 				push(Temp, GetCharP(expr1[ind]));
+				ind++;
 			}
 			else
 			{
@@ -471,6 +475,7 @@ void task04()
 				if ((ch[0] == '+') || (ch[0] == '-') || (ch[0] == '('))
 				{
 					push(Temp, GetCharP(expr1[ind]));
+					ind++;
 				}
 				else
 				{
@@ -481,8 +486,9 @@ void task04()
 			}
 		}
 		else if (expr1[ind] == '(')
-		{
+		{ // открывающа€ скобка
 			push(Temp, GetCharP(expr1[ind]));
+			ind++;
 		}
 		else if (expr1[ind] == ')')
 		{	// закрывающа€ скобка
@@ -496,30 +502,28 @@ void task04()
 				ch = (char*)pop(Temp);
 				if (ch[0] != '(')
 				{
-					// ======= TO CHECK !!! =========
-					ch = (char*)pop(Temp);
 					expr2[ind2] = ch[0];
 					ind2++;
+				}
+				else
+				{
+					ind++;
 				}
 			}
 		}
 		else if (expr1[ind] == '\0')
-		{
+		{ // входна€ строка закончилась
 			ch = (char*)pop(Temp);
 			if (ch[0] == '(')
 			{
 				error = -1;
+				break;
 			}
 			else
 			{
 				expr2[ind2] = ch[0];
 				ind2++;
 			}
-		}
-
-		if (expr1[ind] != '\0')
-		{
-			ind++;
 		}
 	}
 
@@ -544,9 +548,200 @@ void task04()
 //   1. — использованием массива.
 //   2. *— использованием односв€зного списка.
 //
+// === с использованием массива ===
+
+#define maxQ 10
+
+struct TQueue1
+{
+	int tail;
+	int data[maxQ];
+};
+
+typedef struct TQueue1 TQueue1;
+
+int pushQ1(TQueue1* queue, int value)
+{
+	if ((*queue).tail < maxQ - 1)
+	{
+		for (int i = (*queue).tail; i >= 0; i--)
+		{
+			(*queue).data[i + 1] = (*queue).data[i];
+		}
+		(*queue).tail++;
+		(*queue).data[0] = value;
+		return 0;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+int popQ1(TQueue1* queue, int* value)
+{
+	if ((*queue).tail >= 0)
+	{
+		(*queue).tail--;
+		*value = (*queue).data[(*queue).tail + 1];
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+// === с использованием односв€зного списка
+
+struct TNodeQ2
+{
+	int value;
+	struct TNodeQ2* next;
+};
+
+typedef struct TNodeQ2 TNodeQ2;
+
+struct TQueue2
+{
+	TNodeQ2* head;
+	int size;
+	int maxSize;
+};
+
+typedef struct TQueue2 TQueue2;
+
+// пуш
+int pushQ2(TQueue2* queue, int value)
+{
+	if (queue->size >= queue->maxSize)
+	{
+		return -1;
+	}
+	TNodeQ2* tmp = (TNodeQ2*)malloc(sizeof(TNodeQ2));
+	tmp->value = value;
+	tmp->next = queue->head;
+	queue->head = tmp;
+	queue->size++;
+	return 0;
+}
+
+// поп
+int popQ2(TQueue2* queue, int* value)
+{
+	if (queue->size == 0)
+	{
+		return -1;
+	}
+	else
+	{
+		queue->size--;
+
+		TNodeQ2* current;
+		current = queue->head;
+
+		if (current->next == NULL)
+		{
+			*value = current->value;
+			free(current);
+			queue->head = NULL;
+		}
+		else
+		{
+			while (current->next->next != NULL)
+			{
+				current = current->next;
+			}
+			*value = current->next->value;
+			free(current->next);
+			current->next = NULL;
+		}
+		return 0;
+	}
+}
+
+// ќчистка очереди (но не удаление!)
+void EraseQ2(TQueue2* queue)
+{
+	TNodeQ2* current = queue->head;
+	TNodeQ2* next;
+	while (current != NULL)
+	{
+		next = current->next;
+		free(current);
+		current = next;
+	}
+	queue->head = NULL;
+	queue->size = 0;
+}
+
+// »нициализаци€ ново… очереди
+void InitQ2(TQueue2* queue, int maxSize)
+{
+	queue->maxSize = maxSize;
+	queue->size = 0;
+	queue->head = NULL;
+}
+
 void task05()
 {
 	printf("«адача 05 (реализаци€ очереди)\n\n");
+
+	printf("— использованием массива\n");
+
+	TQueue1 queue1;
+	queue1.tail = -1;
+
+	int value;
+	srand(time(NULL));
+
+	printf(" - в очередь: ");
+	// заполнение очереди случайными данными
+	for (int i = 0; i < 10; i++)
+	{
+		value = rand() % 100;
+		pushQ1(&queue1, value);
+		if (i != 9)
+			printf("%d, ", value);
+		else
+			printf("%d.\n", value);
+	}
+	printf(" - из очереди: ");
+	// извлечение данных из очереди
+	while (queue1.tail != -1)
+	{
+		popQ1(&queue1, &value);
+		if (queue1.tail != -1)
+			printf("%d, ", value);
+		else
+			printf("%d.\n\n", value);
+	}
+
+	printf("— использоватнием односв€зного списка\n");
+
+	TQueue2 queue2;
+	InitQ2(&queue2, 10);
+	
+	printf(" - в очередь: ");
+	// заполнение очереди случайными данными
+	for (int i = 0; i < 10; i++)
+	{
+		value = rand() % 100;
+		pushQ2(&queue2, value);
+		if (i != 9)
+			printf("%d, ", value);
+		else
+			printf("%d.\n", value);
+	}
+	printf(" - из очереди: ");
+	// извлечение данных из очереди
+	while (queue2.size != 0)
+	{
+		popQ2(&queue2, &value);
+		if (queue2.size != 0)
+			printf("%d, ", value);
+		else
+			printf("%d.\n\n", value);
+	}
 
 	pause();
 }
