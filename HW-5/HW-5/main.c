@@ -60,9 +60,9 @@ void menu()
 	printf(" 1 - Задача 01 (перевод из десятичной в двоичную систему)\n");
 	printf(" 2 - Задача 02 (скобочные последовательности)\n");
 	printf(" 3 - Задача 03 (копирование односвязного списка)\n");
-	printf(" 3 - Задача 04 (перевод из инфиксной записи в постфиксную)\n");
-	printf(" 3 - Задача 05 (реализация очереди)\n");
-	printf(" 3 - Задача 06 (двусторонняя очередь)\n\n");
+	printf(" 4 - Задача 04 (перевод из инфиксной записи в постфиксную)\n");
+	printf(" 5 - Задача 05 (реализация очереди)\n");
+	printf(" 6 - Задача 06 (двусторонняя очередь)\n\n");
 	printf(" 0 - выход\n\n");
 	printf(" -=> ");
 }
@@ -416,6 +416,127 @@ void task04()
 {
 	printf("Задача 04 (перевод из инфиксной записи в постфиксную)\n\n");
 
+	// флаг ошибки
+	int error = 0;
+	
+	// выделение памяти под исходную и преобразованную строку
+	char* expr1 = (char*)malloc(100 * sizeof(char));
+	char* expr2 = (char*)malloc(100 * sizeof(char));
+
+	// временный стек действий
+	TStack* Temp = (TStack*)malloc(sizeof(TStack));
+	Init(Temp, 100);
+
+	printf("Исходное выражение: ");
+	scanf("%s", expr1);
+	
+	// вспомогательные переменные
+	int ind = 0;
+	int ind2 = 0;
+	char* ch;
+
+	while (!((expr1[ind] == '\0') && (Temp->size == 0)))
+	{
+		if (((expr1[ind] >= 'A') && (expr1[ind] <= 'Z')) || ((expr1[ind] >= 'a') && (expr1[ind] <= 'z')))
+		{	// буква - имя переменной
+			expr2[ind2] = expr1[ind];
+			ind2++;
+		}
+		else if ((expr1[ind] == '+') || (expr1[ind] == '-'))
+		{
+			if (Temp->size == 0)
+			{
+				push(Temp, GetCharP(expr1[ind]));
+			}
+			else if (*(char*)Temp->head->value == '(')
+			{
+				push(Temp, GetCharP(expr1[ind]));
+			}
+			else
+			{
+				ch = (char*)pop(Temp);
+				expr2[ind2] = ch[0];
+				ind2++;
+			}
+		}
+		else if ((expr1[ind] == '*') || (expr1[ind] == '/'))
+		{
+			if (Temp->size == 0)
+			{
+				push(Temp, GetCharP(expr1[ind]));
+			}
+			else
+			{
+				ch = (char*)Temp->head->value;
+				if ((ch[0] == '+') || (ch[0] == '-') || (ch[0] == '('))
+				{
+					push(Temp, GetCharP(expr1[ind]));
+				}
+				else
+				{
+					ch = (char*)pop(Temp);
+					expr2[ind2] = ch[0];
+					ind2++;
+				}
+			}
+		}
+		else if (expr1[ind] == '(')
+		{
+			push(Temp, GetCharP(expr1[ind]));
+		}
+		else if (expr1[ind] == ')')
+		{	// закрывающая скобка
+			if (Temp->size == 0)
+			{
+				error = -1;
+				break;
+			}
+			else
+			{
+				ch = (char*)pop(Temp);
+				if (ch[0] != '(')
+				{
+					// ======= TO CHECK !!! =========
+					ch = (char*)pop(Temp);
+					expr2[ind2] = ch[0];
+					ind2++;
+				}
+			}
+		}
+		else if (expr1[ind] == '\0')
+		{
+			ch = (char*)pop(Temp);
+			if (ch[0] == '(')
+			{
+				error = -1;
+			}
+			else
+			{
+				expr2[ind2] = ch[0];
+				ind2++;
+			}
+		}
+
+		if (expr1[ind] != '\0')
+		{
+			ind++;
+		}
+	}
+
+	expr2[ind2] = '\0';
+
+	if (error == 0)
+	{
+		printf("Выражение в постфиксной записи: %s\n", expr2);
+	}
+	else
+	{
+		printf("\nВыражение не сбалансировано!\n");
+	}
+
+	Erase(Temp);
+	free(Temp);
+	
 	pause();
 }
 
