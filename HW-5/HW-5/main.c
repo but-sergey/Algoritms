@@ -322,9 +322,89 @@ void task02()
 // 3. *Создать функцию, копирующую односвязный список (то есть создающую в памяти копию
 // односвязного списка без удаления первого списка).
 //
+// Копирование стека с данными типа int
+TStack* CopyStackInt(TStack* Stack)
+{
+	// текущий узел
+	TNode* node;
+	TNode* newNode;
+
+	// создание и инициализация нового стека
+	TStack* NewStack = (TStack*)malloc(sizeof(TStack));
+	Init(NewStack, Stack->maxSize);
+
+	// копирование стека
+	if (Stack->head != NULL)
+	{
+		NewStack->head = (TNode*)malloc(sizeof(TNode));
+		newNode = NewStack->head;
+		node = Stack->head;
+
+		while (node != NULL)
+		{
+			// копирование данных
+			newNode->value = GetIntP(*(int*)node->value);
+
+			// создание очередного узла
+			if (node->next != NULL)
+			{
+				newNode->next = (TNode*)malloc(sizeof(TNode));
+				newNode = newNode->next;
+			}
+			else
+			{
+				newNode->next = NULL;
+			}
+			node = node->next;
+		}
+	}
+
+	return NewStack;
+}
+
+// вывод стека на экран (для стека с данными типа int)
+void PrintStackInt2(TStack* Stack)
+{
+	TNode* current = Stack->head;
+	while (current != NULL)
+	{
+		printf("%d", *(int*)current->value);
+		current = current->next;
+		
+		if (current == NULL)
+		{
+			printf(".\n");
+		}
+		else
+		{
+			printf(", ");
+		}
+	}
+}
+
 void task03()
 {
 	printf("Задача 03 (копирование односвязного списка)\n\n");
+
+	// Создание и инициализация стека
+	TStack* Stack = (TStack*)malloc(sizeof(TStack));
+	Init(Stack, 10);
+
+	// Заполнение стека данными
+	srand(time(NULL));
+	for (int i = 0; i <= 10; i++)
+	{
+		push(Stack, GetIntP(rand() % 100));
+	}
+
+	// Создание копии стека
+	TStack* NewStack = CopyStackInt(Stack);
+	
+	// Вывод двух стеков
+	printf("Первый стек: ");
+	PrintStackInt2(Stack);
+	printf("Второй стек: ");
+	PrintStackInt2(NewStack);
 
 	pause();
 }
