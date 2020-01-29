@@ -427,7 +427,7 @@ void task04()
 	TStack* Temp = (TStack*)malloc(sizeof(TStack));
 	Init(Temp, 100);
 
-	printf("Исходное выражение: ");
+	printf("Исходное выражение (латинские буквы, круглые скобки, знаки \"+ - * /\") : ");
 	scanf("%s", expr1);
 	
 	// вспомогательные переменные
@@ -524,6 +524,11 @@ void task04()
 				expr2[ind2] = ch[0];
 				ind2++;
 			}
+		}
+		else
+		{ // недопустимый символ
+			error = -1;
+			break;
 		}
 	}
 
@@ -748,9 +753,215 @@ void task05()
 
 // 6. ***Реализовать двустороннюю очередь.
 //
+struct TNodeQ3
+{
+	int value;
+	struct TNodeQ3* next;
+	struct TNodeQ3* prev;
+};
+
+typedef struct TNodeQ3 TNodeQ3;
+
+struct TQueue3
+{
+	TNodeQ3* head;
+	TNodeQ3* tail;
+	int size;
+	int maxSize;
+};
+
+typedef struct TQueue3 TQueue3;
+
+// пуш
+int pushHead(TQueue3* queue, int value)
+{
+	if (queue->size >= queue->maxSize)
+	{
+		return -1;
+	}
+	TNodeQ3* tmp = (TNodeQ3*)malloc(sizeof(TNodeQ3));
+	tmp->value = value;
+	tmp->next = NULL;
+	tmp->prev = NULL;
+
+	if (queue->size == 0)
+	{
+		queue->head = tmp;
+		queue->tail = tmp;
+	}
+	else
+	{
+		tmp->next = queue->head;
+		queue->head->prev = tmp;
+		queue->head = tmp;
+	}
+
+	queue->size++;
+	return 0;
+}
+
+int pushTail(TQueue3* queue, int value)
+{
+	if (queue->size >= queue->maxSize)
+	{
+		return -1;
+	}
+	TNodeQ3* tmp = (TNodeQ3*)malloc(sizeof(TNodeQ3));
+	tmp->value = value;
+	tmp->next = NULL;
+	tmp->prev = NULL;
+
+	if (queue->size == 0)
+	{
+		queue->head = tmp;
+		queue->tail = tmp;
+	}
+	else
+	{
+		tmp->prev = queue->tail;
+		queue->tail->next = tmp;
+		queue->tail = tmp;
+	}
+
+	queue->size++;
+	return 0;
+}
+
+// поп
+int popHead(TQueue3* queue, int* value)
+{
+	if (queue->size == 0)
+	{
+		return -1;
+	}
+	else
+	{
+		*value = queue->head->value;
+
+		if (queue->size == 1)
+		{
+			free(queue->head);
+			queue->head = NULL;
+			queue->tail = NULL;
+		}
+		else
+		{
+			queue->head = queue->head->next;
+			free(queue->head->prev);
+			queue->head->prev = NULL;
+		}
+
+
+		queue->size--;
+		return 0;
+	}
+}
+
+int popTail(TQueue3* queue, int* value)
+{
+	if (queue->size == 0)
+	{
+		return -1;
+	}
+	else
+	{
+		*value = queue->tail->value;
+
+		if (queue->size == 1)
+		{
+			free(queue->head);
+			queue->head = NULL;
+			queue->tail = NULL;
+		}
+		else
+		{
+			queue->tail = queue->tail->prev;
+			free(queue->tail->next);
+			queue->tail->next = NULL;
+		}
+
+		queue->size--;
+		return 0;
+	}
+}
+
+// Очистка очереди (но не удаление!)
+void EraseQ3(TQueue3* queue)
+{
+	TNodeQ3* current = queue->head;
+	TNodeQ3* next;
+	while (current != NULL)
+	{
+		next = current->next;
+		free(current);
+		current = next;
+	}
+	queue->head = NULL;
+	queue->tail = NULL;
+	queue->size = 0;
+}
+
+// Инициализация новоЙ очереди
+void InitQ3(TQueue3* queue, int maxSize)
+{
+	queue->maxSize = maxSize;
+	queue->size = 0;
+	queue->head = NULL;
+	queue->tail = NULL;
+}
+
 void task06()
 {
 	printf("Задача 06 (двусторонняя очередь)\n\n");
 
+	TQueue3 queue;
+	InitQ3(&queue, 10);
+
+	int value;
+
+	srand(time(NULL));
+
+	printf("Заталкивание через голову: ");
+	for (int i = 0; i < 10; i++)
+	{
+		value = rand() % 100;
+		pushHead(&queue, value);
+		if (i != 9)
+			printf("%d, ", value);
+		else
+			printf("%d.\n", value);
+	}
+
+	printf("Выталкивание через хвост: ");
+	while (queue.size > 0)
+	{
+		popTail(&queue, &value);
+		if (queue.size != 0)
+			printf("%d, ", value);
+		else
+			printf("%d.\n\n", value);
+	}
+	
+	printf("Заталкивание через хвост: ");
+	for (int i = 0; i < 10; i++)
+	{
+		value = rand() % 100;
+		pushTail(&queue, value);
+		if (i != 9)
+			printf("%d, ", value);
+		else
+			printf("%d.\n", value);
+	}
+
+	printf("Выталкивание через голову: ");
+	while (queue.size > 0)
+	{
+		popHead(&queue, &value);
+		if (queue.size != 0)
+			printf("%d, ", value);
+		else
+			printf("%d.\n\n", value);
+	}
+	
 	pause();
 }
