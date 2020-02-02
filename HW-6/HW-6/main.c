@@ -63,9 +63,28 @@ void pause()
 // 1. Реализовать простейшую хэш-функцию. На вход функции подается строка, на выходе сумма кодов
 // символов.
 //
+int SimpleHash(char *in)
+{
+	int out = 0;
+	int i = 0;
+	while (in[i] != '\0')
+	{
+		out += (int) in[i];
+		i++;
+	}
+	return out;
+}
+
 void task01()
 {
 	printf("Задача 01 (хэш-функция)\n\n");
+
+	char* str_in = (char*)malloc(100 * sizeof(char));
+
+	printf("Строка для вычисления хеш-суммы: ");
+	scanf("%s", str_in);
+
+	printf("\nХеш-сумма введенной строки: %d\n", SimpleHash(str_in));
 
 	pause();
 }
