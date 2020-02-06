@@ -136,8 +136,86 @@ void task01()
 }
 
 // 2. Написать рекурсивную функцию обхода графа в глубину.
-// https://shpargalum.ru/shpora-gos-povtas/strukturyi-i-algoritmyi-obrabotki-dannyix/grafyi.-obxod-grafov-v-shirinu-i-glubinu.html
 //
+// Сделаем два стека - 1 для запоминания ещё не обработанных вершин
+// и 2 для запоминания уже обработанных
+
+// === реализация стека
+struct TNode
+{
+	int value;
+	struct TNode* next;
+};
+typedef struct TNode TNode;
+
+struct TStack
+{
+	TNode* head;
+	int size;
+	int maxSize;
+};
+typedef struct TStack TStack;
+
+int push(TStack* Stack, int value)
+{
+	if (Stack->size >= Stack->maxSize)
+	{
+		return -1;
+	}
+	TNode* tmp = (TNode*)malloc(sizeof(TNode));
+	tmp->value = value;
+	tmp->next = Stack->head;
+	Stack->head = tmp;
+	Stack->size++;
+	return 0;
+}
+
+int* pop(TStack* Stack)
+{
+	if (Stack->size == 0)
+	{
+		return NULL;
+	}
+	TNode* tmp = NULL;
+	int* value = (int*)malloc(sizeof(int));
+	*value = Stack->head->value;
+	tmp = Stack->head;
+	Stack->head = Stack->head->next;
+	free(tmp);
+	Stack->size--;
+	return value;
+}
+// === конец реализации стека
+
+void DeepTraverse(TStack* processed, int** Matrix, int node, int N)
+{
+	TNode* current = processed->head;
+	BOOL flag = FALSE;
+	while (current != NULL)
+	{
+		if (current->value == node)
+		{
+			flag = TRUE;
+			break;
+		}
+		current = current->next;
+	}
+
+	// если вершина ещё не обработана...
+	if (!flag)
+	{
+		printf("%d ", node);
+		push(processed, node);
+		for (int i = 0; i < N; i++)
+		{
+			if (Matrix[node][i] != 0)
+			{
+				DeepTraverse(processed, Matrix, i, N);
+			}
+		}
+	}
+}
+
 void task02()
 {
 	printf("Задача 02 (обход графа в глубину)\n\n");
@@ -147,7 +225,17 @@ void task02()
 	int** Matrix = ReadMatrix("..\\matrix.txt", &N);
 
 	PrintMatrix(Matrix, N);
+	printf("\n");
 
+	TStack processed;
+	processed.head = NULL;
+	processed.size = 0;
+	processed.maxSize = 100;
+
+	// обход в глубину
+	printf("Обход \"графа в глубину\": ");
+	DeepTraverse(&processed, Matrix, 0, N);
+	printf("\n");
 
 	// освобождение памяти
 	FreeMatrix(Matrix, N);
