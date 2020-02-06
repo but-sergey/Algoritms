@@ -170,7 +170,7 @@ int push(TStack* Stack, int value)
 	return 0;
 }
 
-int* pop(TStack* Stack)
+/*int* pop(TStack* Stack)
 {
 	if (Stack->size == 0)
 	{
@@ -184,9 +184,23 @@ int* pop(TStack* Stack)
 	free(tmp);
 	Stack->size--;
 	return value;
+}*/
+
+// освобождение стека
+void FreeStack(TStack Stack)
+{
+	TNode* current = Stack.head;
+	TNode* tmp;
+	while (current != NULL)
+	{
+		tmp = current->next;
+		free(current);
+		current = tmp;
+	}
 }
 // === конец реализации стека
 
+// рекурсивный обход графа в глубину
 void DeepTraverse(TStack* processed, int** Matrix, int node, int N)
 {
 	TNode* current = processed->head;
@@ -227,24 +241,154 @@ void task02()
 	PrintMatrix(Matrix, N);
 	printf("\n");
 
+	// Список (стек) обработанных вершин
 	TStack processed;
 	processed.head = NULL;
 	processed.size = 0;
 	processed.maxSize = 100;
 
 	// обход в глубину
-	printf("Обход \"графа в глубину\": ");
+	printf("Обход графа \"в глубину\": ");
 	DeepTraverse(&processed, Matrix, 0, N);
 	printf("\n");
 
 	// освобождение памяти
 	FreeMatrix(Matrix, N);
+	FreeStack(processed);
 
 	pause();
 }
 
 // 3. Написать функцию обхода графа в ширину
 //
+
+// === реализация очереди
+struct TQueue
+{
+	TNode* head;
+	int size;
+	int maxSize;
+};
+typedef struct TQueue TQueue;
+
+int pushQ(TQueue* Queue, int value)
+{
+	if (Queue->size >= Queue->maxSize)
+	{
+		return -1;
+	}
+	TNode* tmp = (TNode*)malloc(sizeof(TNode));
+	tmp->value = value;
+	tmp->next = Queue->head;
+	Queue->head = tmp;
+	Queue->size++;
+	return 0;
+}
+
+int* popQ(TQueue* Queue)
+{
+	// если очередь пуста, возвращаем NULL
+	if (Queue->size == 0)
+	{
+		return NULL;
+	}
+	// переходим в конец очереди
+	TNode* tmp = Queue->head;
+	TNode* tmpPrev = NULL;
+	while (tmp->next != NULL)
+	{
+		tmpPrev = tmp;
+		tmp = tmp->next;
+	}
+	// вытаскиваем значение
+	int* value = (int*)malloc(sizeof(int));
+	*value = tmp->value;
+
+	// удаляем узел
+	if (tmpPrev != NULL)
+	{
+		tmpPrev->next = NULL;
+	}
+	else
+	{
+		Queue->head = NULL;
+	}
+	free(tmp);
+	Queue->size--;
+	
+	return value;
+}
+
+// освобождение очереди
+void FreeQueue(TQueue Queue)
+{
+	TNode* current = Queue.head;
+	TNode* tmp;
+	while (current != NULL)
+	{
+		tmp = current->next;
+		free(current);
+		current = tmp;
+	}
+}
+// === конец реализации очереди
+
+// обход графа в ширину
+void WidthTraverse(int** Matrix, int node, int N)
+{
+	// очередь вершин, ожидающих обработки
+	TQueue* toProcess = (TQueue*)malloc(sizeof(TQueue));
+	toProcess->head = NULL;
+	toProcess->size = 0;
+	toProcess->maxSize = 100;
+
+	// стек(список) обработанных вершин
+	TStack* processed = (TStack*)malloc(sizeof(TStack));
+	processed->head = NULL;
+	processed->size = 0;
+	processed->maxSize = 100;
+
+	TNode* tmpNode;
+
+	int current;
+	BOOL flag;
+
+	pushQ(toProcess, node);
+
+	while (toProcess->size != 0)
+	{
+		// извлекаем вершину из очереди, обрабатываем (вывод в консоль)
+		current = *popQ(toProcess);
+		printf("%d ", current);
+		push(processed, current);
+		
+		// поиск необработанных смежных вершин
+		for (int i = 0; i < N; i++)
+		{
+			if (Matrix[current][i] != 0)
+			{
+				// проверка обработана смежная вершина или нет
+				tmpNode = processed->head;
+				flag = FALSE;
+				while (tmpNode != NULL)
+				{
+					if (tmpNode->value == i)
+					{
+						flag = TRUE;
+						break;
+					}
+					tmpNode = tmpNode->next;
+				}
+				// если вершина не обработана, ставим её в очередь на обработку
+				if (!flag)
+				{
+					pushQ(toProcess, i);
+				}
+			}
+		}
+	}
+}
+
 void task03()
 {
 	printf("Задача 03 (обход графа в ширину)\n\n");
@@ -254,8 +398,11 @@ void task03()
 	int** Matrix = ReadMatrix("..\\matrix.txt", &N);
 
 	PrintMatrix(Matrix, N);
-
-
+	
+	// обход в ширину
+	printf("Обход графа \"в ширину\": ");
+	WidthTraverse(Matrix, 0, N);
+	printf("\n");
 
 	// освобождение памяти
 	FreeMatrix(Matrix, N);
