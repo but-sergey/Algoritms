@@ -1,0 +1,365 @@
+// ================================================================
+// Внимание!!! Для отображения русских букв (в Win7) в окне консоли
+// в свойствах изменить шрифт на Lucida Console!
+// ================================================================
+
+// Курс "Алгоритмы и структуры данных"
+// Практическая работа №4
+// Бут Сергей
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<Windows.h>
+#pragma warning(disable:6031)
+#pragma warning(disable:6011)
+#pragma warning(disable:6385)
+#pragma warning(disable:6386)
+#pragma warning(disable:6387)
+
+void menu();
+void task01();
+void task02();
+void task03();
+
+int main(int argc, const char* argv[])
+{
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
+
+	int sel = 0;
+	do
+	{
+		menu();
+		scanf("%i", &sel);
+
+		if (sel != 0) { system("cls"); }
+
+		switch (sel)
+		{
+		case 1: task01();
+			break;
+		case 2: task02();
+			break;
+		case 3: task03();
+			break;
+		}
+	} while (sel != 0);
+
+	return 0;
+}
+
+void menu()
+{
+	system("cls");
+	printf(" 1 - Задача 01 (количество маршрутов)\n");
+	printf(" 2 - Задача 02 (длина максимальной последовательности)\n");
+	printf(" 3 - Задача 03 (шахматный конь)\n\n");
+	printf(" 0 - выход\n\n");
+	printf(" -=> ");
+}
+
+void pause()
+{
+	printf("\nНажмите <Enter> для продолжения...");
+	getch();
+}
+
+// 1. *Количество маршрутов с препятствиями. Реализовать чтение массива с препятствием и
+// нахождение количество маршрутов.
+// Например, карта:
+// 3 3
+// 1 1 1
+// 0 1 0
+// 0 1 0
+//
+void task01()
+{
+	printf("Задача 01 (количество маршрутов)\n\n");
+	
+	char fileName[] = "..\\map.txt";
+	FILE* mapFile = fopen(fileName, "r");
+
+	if (mapFile != NULL)
+	{
+		// чтение размера карты
+		int N, M;
+		fscanf(mapFile, "%d %d", &N, &M);
+		
+		// создание динамического двумерного массива - карты
+		int** map = (int**)malloc(N * sizeof(int*));
+		for (int i = 0; i < N; i++)
+		{
+			map[i] = (int*)malloc(M * sizeof(int));
+		}
+
+		// чтение карты из файла
+		for (int i = 0; i < N; i++)
+		{
+			for (int j = 0; j < M; j++)
+			{
+				fscanf(mapFile, "%d", &map[i][j]);
+			}
+		}
+		
+		// вывод массива (контроль)
+		printf("Карта:\n");
+		for (int i = 0; i < N; i++)
+		{	
+			for (int j = 0; j < M; j++)
+			{
+				printf("%5d ", map[i][j]); 
+			}
+			printf("\n");
+		}
+		printf("\n");
+		// закрытие файла
+		fclose(mapFile);
+		
+		// выделение памяти динамического двумерного массива решений
+		int** ways = (int**)malloc(N * sizeof(int*));
+		for (int i = 0; i < N; i++)
+		{
+			ways[i] = (int*)malloc(M * sizeof(int));
+		}
+		// заполнение массива решений
+		for (int i = 0; i < N; i++)
+		{
+			for (int j = 0; j < M; j++)
+			{
+				if (map[i][j] == 0)
+				{
+					ways[i][j] = 0;
+				}
+				else if ((i == 0) || (j == 0))
+				{
+					ways[i][j] = 1;
+				}
+				else 
+				{
+					ways[i][j] = ways[i - 1][j] + ways[i][j - 1];
+				}
+			}
+		}
+
+		// вывод массива
+		printf("Количество маршрутов до соответствующих точек:\n");
+		for (int i = 0; i < N; i++)
+		{
+			for (int j = 0; j < M; j++)
+			{
+				printf("%5d ", ways[i][j]);
+			}
+			printf("\n");
+		}
+		printf("\n");
+
+		// освобождение памяти, выделенной под массивы
+		for (int i = 0; i < N; i++)
+		{
+			free(map[i]);
+			free(ways[i]);
+		}
+		free(map);
+		free(ways);
+	}
+	else
+	{
+		printf("Не удалось открыть файл %s\n", fileName);
+	}
+
+	pause();
+}
+
+// 2. Решить задачу о нахождении длины максимальной последовательности с помощью матрицы
+//
+void task02()
+{
+	printf("Задача 02 (длина максимальной последовательности)\n\n");
+
+	char *A;
+	char *B;
+	int N;
+	int M;
+	int LCS_len;
+	char* LCS;
+	A = (char*)malloc(100);
+	B = (char*)malloc(100);
+	LCS = (char*)malloc(100);
+
+	printf("Первая последовательность (макс. 100 символов): ");
+	scanf("%s", A);
+	// A = "GEEKBRAINS"; // на период отладки
+	N = strlen(A);
+	printf("Вторая последовательность (макс. 100 символов): ");
+	scanf("%s", B);
+	// B = "GEEKMINDS"; // на период отладки
+	M = strlen(B);
+
+	// выделение памяти для матрицы
+	int** count = (int**)malloc((N + 1) * sizeof(int*));
+	for (int i = 0; i <= N; i++)
+	{
+		count[i] = (int*)malloc((M + 1) * sizeof(int));
+	}
+
+	// заполнение матрицы и формирование LCS
+	LCS_len = 0;
+	LCS[0] = '\0';
+	for (int i = 0; i <= N; i++)
+	{
+		for (int j = 0; j <= M; j++)
+		{
+			if ((i == 0) || (j == 0))
+			{
+				count[i][j] = 0;
+			}
+			else if (A[i-1] == B[j-1])
+			{
+				// заполнение ячейки матрицы
+				count[i][j] = 1 + count[i - 1][j - 1];
+				// формирование строки НОП
+				LCS[count[i][j] - 1] = A[i - 1];
+				LCS[count[i][j]] = '\0';
+				// сохранение длины НОП
+				LCS_len = count[i][j];
+			}
+			else
+			{
+				count[i][j] = max(count[i - 1][j], count[i][j - 1]);
+			}
+		}
+	}
+
+	// вывод матрицы (для контроля)
+	/*printf("Матрица решений:\n");
+	for (int i = -1; i <= N; i++)
+	{
+		for (int j = -1; j <= M; j++)
+		{
+			if (((i == -1) && (j < 1)) || ((i == 0) && (j == -1)))
+			{
+				printf("    "); 
+			}
+			else if ((i == -1) && (j > 0))
+			{
+				printf("   %c", B[j - 1]); 
+			}
+			else if ((j == -1) && (i > 0))
+			{
+				printf("   %c", A[i - 1]); 
+			}
+			else
+			{
+				printf("%4d", count[i][j]); 
+			}
+		}
+		printf("\n");
+	}
+	*/
+	printf("\n");
+	printf("Длина наибольшей общей подпоследовательности равна %d\n", LCS_len);
+	printf("Наибольшая общая подпоследовательность: %s\n", LCS);
+
+	// освобождение памяти
+	for (int i = 0; i <= N; i++)
+	{
+		free(count[i]);
+	}
+	free(count);
+	
+	pause();
+}
+
+// 3. ***Требуется обойти конём шахматную доску размером NxM, пройдя через все поля доски по
+// одному разу.Здесь алгоритм решения такой же как и в задаче о 8 ферзях.Разница только в проверке
+// положения коня.
+//
+// размер доски
+int N;
+int M;
+// выводим доску
+void Print(int** a)
+{
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < M; j++)
+		{
+			printf("%4d", a[i][j]);
+		}
+		printf("\n");
+	}
+}
+
+// очищаем доску
+void Zero(int** a)
+{
+	for (int i = 0; i < N; i++)
+		for (int j = 0; j < M; j++)
+		{
+			a[i][j] = 0;
+		}
+}
+
+// поиск решения
+int SearchSolution(int num, int x, int y, int** board)
+{
+	if (num == N * M + 1) return 1;
+	for (int row = 0; row < N; row++)
+	{
+		for (int col = 0; col < M; col++)
+		{
+			// если клетка пустая
+			if (board[row][col] == 0)
+			{
+				// условие хода конем (если первый ход, то подходит любая клетка)
+				if ((num == 1) || (((abs(row - x) == 2) && (abs(col - y) == 1)) || ((abs(row - x) == 1) && (abs(col - y) == 2))))
+				{
+					board[row][col] = num;
+					if (SearchSolution(num + 1, row, col, board)) return 1;
+					board[row][col] = 0;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+void task03()
+{
+	printf("Задача 03 (шахматный конь)\n\n");
+
+	int x;
+	int y;
+
+	printf("Размеры доски через пробел (N M): ");
+	scanf("%d %d", &N, &M);
+
+	//выделение памяти под двумерный массив
+	int** board = (int**)malloc(N * sizeof(int*));
+	for (int i = 0; i < N; i++)
+	{
+		board[i] = (int*)malloc(M * sizeof(int));
+	}
+
+	Zero(board);
+	printf("\n");
+	if (SearchSolution(1, -1, -1, board))
+	{
+		printf("Решение: \n\n");
+		Print(board);
+	}
+	else
+	{
+		printf("Решение не найдено.\n");
+	}
+
+	// освобождение памяти
+	for (int i = 0; i < N; i++)
+	{
+		free(board[i]);
+	}
+	free(board);
+	
+	pause();
+}
